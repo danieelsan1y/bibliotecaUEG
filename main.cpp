@@ -5,6 +5,45 @@
 
 // ################# Carregar Livros 
 
+//struct do cadastro
+struct cadastro {
+	int cpf;
+	char* nome; 
+ 	struct cadastro *prox;
+};
+typedef cadastro cadastro;
+
+// 
+cadastro* inserirPessoa (int cpf, char *nomeCadastro, cadastro *pessoa) {
+   cadastro *novo = (cadastro*)malloc(sizeof(cadastro));
+   novo->cpf = cpf;
+   novo->nome = nomeCadastro;
+	 novo->prox = pessoa;
+   
+	 return novo;
+}
+//Carregar as pessoas
+cadastro* carregarPessoas(cadastro* pessoa) {
+ 	pessoa =inserirPessoa(11, "Daniel", pessoa);
+	pessoa =inserirPessoa(12, "Danillo", pessoa);
+	pessoa =inserirPessoa(13, "Gabriel", pessoa);
+
+}
+								
+//Mostrar pessoas cadastradas
+void mostrarPessoas(cadastro *pessoa) {
+	
+	if(pessoa==NULL)
+		return; 
+	
+	mostrarPessoas(pessoa->prox);
+		printf("Nome: %s\n",pessoa->nome);
+		printf("Cpf: %d\n",pessoa->cpf);
+		printf("\n");
+}
+
+
+
 // struct do livro com os dados
 struct livro {
 	int id;
@@ -16,13 +55,13 @@ struct livro {
 typedef livro livro;
 
 
-// aloca uma memória
+// aloca uma memória do livro
 livro * alocar() {
 	livro *novo= (livro*)malloc(sizeof(livro));
 	return novo;
 }
 
-
+//insere livros
 livro* insere (int id, char* titulo, char* status,  livro *p) {
    livro *novo = alocar();
    novo->titulo = titulo;
@@ -39,7 +78,8 @@ void imprimirLivros(livro* lista) {
 		return; 
 	
 	imprimirLivros(lista->prox);
-		printf("ID:%d  -   Título: %s  -   Status: %s\n",lista->id,lista->titulo,lista->status);
+		printf("ID:%d \nTítulo: %s  \nStatus: %s\n",lista->id,lista->titulo,lista->status);
+		printf("\n");
 }
 
 //Carregar os livros da biblioteca
@@ -82,7 +122,6 @@ void emprestarLivro (livro *livroParaEmprestar, livro *tp) {
    
    novaPilha->prox  = tp->prox;
    tp->prox = novaPilha;
-//      printf("ID:%d  -   Título: %s  -   Status: %s\n",novaPilha->id,novaPilha->titulo,novaPilha->status);
 
 }
 
@@ -94,47 +133,8 @@ void imprimirLivrosEmprestados(livro *pilha) {
 		aux2=aux2->prox;
 	}
 }
-//////
 
-//################################## fila de usuário
 
-struct usuario{
-	char* nome;
-	struct usuario *prox;
-};
-
-typedef usuario usuario;
-
-usuario* criarUsuario (char *nomeUsuario ,usuario* pessoas)
-{
-	usuario *novo;
-	novo= (usuario*) malloc(sizeof(usuario));
-	novo->prox = pessoas->prox;
-	pessoas->prox = novo;
-	pessoas->nome= nomeUsuario;
-	return novo;
-}
-
-void listaDePessoas (usuario *pessoas){
-		pessoas = criarUsuario("Daniel",pessoas);
-		pessoas = criarUsuario("Danillo",pessoas);
-		pessoas = criarUsuario("Gabriel",pessoas);
-		pessoas = criarUsuario("Lucas",pessoas);
-}
-
-void imprimir(usuario *pessoas){
-	usuario *aux2= pessoas;
-//	while(aux2!= NULL)
-//	{
-//		printf("%s\n",aux2->nome);
-//		aux2=aux2->prox;
-//	}
- usuario* u;
- for(u = pessoas; u->prox != NULL; u= u->prox) {
- 		printf("%s\n",u->nome);
- }
-	
-}
 
 
 
@@ -145,11 +145,7 @@ int main ()
 	livro *lista = NULL;
 	livro* livroEscolhido;
 	lista = carregarBiblioteca(lista);
-	
-	usuario *pessoas = NULL;
-//	usuario* pessoas;
-	pessoas = (usuario*)malloc(sizeof(usuario));
-	pessoas->prox = pessoas;
+	cadastro *pessoa= NULL;
 	
 		
 	livro cabeca;
@@ -157,22 +153,19 @@ int main ()
 	tp = &cabeca;
 	tp->prox = NULL;
 	
-	pessoas = criarUsuario("Daniel",pessoas);
-		pessoas = criarUsuario("Danillo",pessoas);
-//	listaDePessoas(pessoas);
-//	imprimir(pessoas);
 	
 	
 	int escolha, id;
-	
-	
+	char nomeCadastro[30];
+	int cpf;
+						
 	do
 	{
 		system("cls");
 		printf(" -------------> M E N U P R I N C I P A L <---------------\n");
 		printf("|\n");
-		printf("|(1)Alugar livros disponíveis \n");
-		printf("|(2)Mostrar Livros Alugados\n");
+		printf("|(1)Mostrar pessoas cadastradas\n");
+		printf("|(3)Alugar Livro\n");
 		printf("|(3)Sair\n");
 		printf("|Escolha a opção desejada:\n");
 		printf("|_________________________________________________________");
@@ -180,22 +173,30 @@ int main ()
 		system("cls");
 		switch(escolha)
 		{
-			case 1: 
+				
+				case 1:
+					pessoa = carregarPessoas(pessoa);
+					printf("             Usuários\n");
+					mostrarPessoas(pessoa);
+					break;
+					
+				break;
+			case 2: 
+				printf("             Livros\n");
 				imprimirLivros(lista);
 				printf("Digite o número do ID do livro desejado: ");
 				scanf("%d",&id);
 				livroEscolhido = buscaLivroId(lista, id);
-//				imprimirLivros(lista);
 				livroEscolhido->status = "Indisponível";
 				emprestarLivro(livroEscolhido,  tp);
 				break;
-			case 2:
+			case 3:
 				imprimirLivrosEmprestados(tp);
 				break;
 				
 		}
 		system("pause");
-	}while(escolha != 3);
+	}while(escolha != 5);
 
 	
 	return 0;
