@@ -5,43 +5,75 @@
 
 // ################# Carregar Livros 
 
-//struct do cadastro
-struct cadastro {
-	int cpf;
+//struct do usuário
+struct usuario {
 	char* nome; 
- 	struct cadastro *prox;
+	struct pilhaDeLivros *usuarioPilha;
+ 	struct usuario *prox;
 };
-typedef cadastro cadastro;
 
-// 
-cadastro* inserirPessoa (int cpf, char *nomeCadastro, cadastro *pessoa) {
-   cadastro *novo = (cadastro*)malloc(sizeof(cadastro));
-   novo->cpf = cpf;
-   novo->nome = nomeCadastro;
-	 novo->prox = pessoa;
-   
-	 return novo;
+// Pilha do usuário
+struct pilhaDeLivros {
+	int idLivro;
+	char* tituloLivro; 
+ 	struct pilhaUsuario *prox;
+};
+
+
+typedef pilhaDeLivros pilhaDeLivros;
+typedef usuario usuario;
+
+
+
+usuario *inserirUsuario (char *nomeUsuario, usuario *pessoa) {
+	usuario *nova;
+	nova = (usuario*)malloc(sizeof(usuario));
+	nova->prox = pessoa->prox;
+	pessoa->prox = nova;
+	pessoa->nome = nomeUsuario;
+	return nova;
+
 }
-//Carregar as pessoas
-cadastro* carregarPessoas(cadastro* pessoa) {
- 	pessoa =inserirPessoa(11, "Daniel", pessoa);
-	pessoa =inserirPessoa(12, "Danillo", pessoa);
-	pessoa =inserirPessoa(13, "Gabriel", pessoa);
 
+//Carregar as pessoas
+void carregarUsuario (usuario* pessoa) {
+ 	pessoa = inserirUsuario("Daniel", pessoa);
+	pessoa = inserirUsuario("Danillo", pessoa);
+	pessoa = inserirUsuario("Gabriel", pessoa);
+	pessoa = inserirUsuario("Fernando", pessoa);
 }
 								
-//Mostrar pessoas cadastradas
-void mostrarPessoas(cadastro *pessoa) {
-	
-	if(pessoa==NULL)
-		return; 
-	
-	mostrarPessoas(pessoa->prox);
-		printf("Nome: %s\n",pessoa->nome);
-		printf("Cpf: %d\n",pessoa->cpf);
-		printf("\n");
+void  mostrarUsuario (usuario *pessoa) {
+   usuario *p;
+   int cont=0;
+   p = pessoa;
+   while(p->prox != pessoa){
+   	if(cont==1)
+   	{
+   		printf("--->Nome: %s\n", p->nome);
+		}else{
+			printf("    Nome: %s\n", p->nome);
+		}
+		cont++;
+		p = p->prox; 
+	 }    
 }
 
+char* removeUsuario (usuario *pessoa) {
+ char *nome;
+ usuario *p, *t;
+
+ t = pessoa; 
+ p = pessoa->prox; // p aponta primeiro da fila
+ nome = p->nome;
+ pessoa->prox = p->prox;
+ 
+ pessoa = p;
+ pessoa->prox = t;
+
+// free (p);
+ return nome;
+}
 
 
 // struct do livro com os dados
@@ -62,24 +94,38 @@ livro * alocar() {
 }
 
 //insere livros
-livro* insere (int id, char* titulo, char* status,  livro *p) {
-   livro *novo = alocar();
+livro* insere (int id, char* titulo, char* status,  livro *lista) {
+	livro *novo =(livro*)malloc(sizeof(livro));
    novo->titulo = titulo;
    novo->status = status;
    novo->id = id;
-	 novo->prox = p;
-   
-	 return novo;
+	
+	if(lista == NULL)
+	{
+		novo->prox = NULL;
+		lista =novo;
+	}else{
+		livro *aux = lista;
+		while (aux->prox!=NULL)
+		{
+			aux=aux->prox;
+		}
+		aux->prox=novo;
+		novo->prox = NULL;
+	}
+	return lista;
 }
+
 
 //imprime a lista de livros
 void imprimirLivros(livro* lista) {
-	if(lista==NULL)
-		return; 
-	
-	imprimirLivros(lista->prox);
-		printf("ID:%d \nTítulo: %s  \nStatus: %s\n",lista->id,lista->titulo,lista->status);
-		printf("\n");
+	livro *aux2= lista;
+	while(aux2!= NULL)
+	{
+   	printf(" Id:%d\n Título:%s\n Status:%s\n",aux2->id,aux2->titulo, aux2->status);
+   	printf("\n");
+		aux2=aux2->prox;
+	}
 }
 
 //Carregar os livros da biblioteca
@@ -110,7 +156,7 @@ livro* buscaLivroId(livro *lista, int id){
 
 
 
-///////////////////////////////////////////// Emprestimo
+
 void emprestarLivro (livro *livroParaEmprestar, livro *tp) { 
 	
 	livroParaEmprestar->status = "Indisponível";
@@ -144,54 +190,81 @@ int main ()
 	setlocale(LC_ALL,"portuguese");
 	livro *lista = NULL;
 	livro* livroEscolhido;
-	lista = carregarBiblioteca(lista);
-	cadastro *pessoa= NULL;
-	
+
+	usuario *pessoa;
+	pessoa = (usuario*)malloc(sizeof(usuario));
+	pessoa->prox = pessoa;
+
 		
-	livro cabeca;
+	/*livro cabeca;
 	livro *tp;
+	tp = &cabeca;
+	tp->prox = NULL;
+	*/
+	
+	pilhaDeLivros cabeca;
+	pilhaDeLivros *tp;
 	tp = &cabeca;
 	tp->prox = NULL;
 	
 	
-	
 	int escolha, id;
 	char nomeCadastro[30];
+	char *usuarioRemovido;
 	int cpf;
-						
+	
+	
+	carregarUsuario(pessoa);		
+	lista = carregarBiblioteca(lista);	
+	printf("Fila de usuários");
+	mostrarUsuario(pessoa);
+			
 	do
 	{
 		system("cls");
+		printf("Fila de usuários\n");
+		if (pessoa->prox == pessoa) {
+			pessoa = (usuario*)malloc(sizeof(usuario));
+			pessoa->prox = pessoa;
+			carregarUsuario(pessoa);
+			mostrarUsuario(pessoa);
+		} else {
+			mostrarUsuario(pessoa);
+		}
+		
+		
 		printf(" -------------> M E N U P R I N C I P A L <---------------\n");
 		printf("|\n");
 		printf("|(1)Mostrar pessoas cadastradas\n");
-		printf("|(3)Alugar Livro\n");
+		printf("|(2)Mostrar livros\n");
 		printf("|(3)Sair\n");
 		printf("|Escolha a opção desejada:\n");
-		printf("|_________________________________________________________");
+		printf("|_________________________________________________________\n");
+		printf("Digite a opção: ");
 		scanf("%i",&escolha);
 		system("cls");
 		switch(escolha)
 		{
 				
 				case 1:
-					pessoa = carregarPessoas(pessoa);
-					printf("             Usuários\n");
-					mostrarPessoas(pessoa);
+					usuarioRemovido = removeUsuario(pessoa);
 					break;
 					
+					case 2:
+						printf("             Livros\n");
+						imprimirLivros(lista);
 				break;
-			case 2: 
-				printf("             Livros\n");
+			case 3: 
+				/*printf("             Livros\n");
 				imprimirLivros(lista);
 				printf("Digite o número do ID do livro desejado: ");
 				scanf("%d",&id);
 				livroEscolhido = buscaLivroId(lista, id);
-				livroEscolhido->status = "Indisponível";
 				emprestarLivro(livroEscolhido,  tp);
 				break;
-			case 3:
+			case 4:
 				imprimirLivrosEmprestados(tp);
+				*/
 				break;
 				
 		}
