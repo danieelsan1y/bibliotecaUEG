@@ -96,57 +96,6 @@ void imprimirCadastroUsuarios(cadUsuario* lista) {
 //################### Fim do Cadastro de Usuários da Biblioteca
 
 
-//################### Início da Fila de Usuários
-//struct fila do usuário
-struct filaUsuario {
-	char nome[50]; 
- 	struct filaUsuario *prox;
-};
-
-typedef filaUsuario usuario;
-
-usuario *inserirUsuario (char nomeUsuario[], filaUsuario *pessoa) {
-	filaUsuario *nova;
-	nova = (filaUsuario*)malloc(sizeof(filaUsuario));
-	nova->prox = pessoa->prox;
-	pessoa->prox = nova;
-	strcpy(pessoa->nome, nomeUsuario);	
-	
-  return nova;
-}
-								
-void  mostrarFilaDeUsuarios (filaUsuario *pessoa) {
-   filaUsuario *p;
-   int cont=0;
-   p = pessoa;
-   while(p->prox != pessoa){
-	 printf("    Nome: %s\n", p->prox->nome);
-	 cont++;
-	 p = p->prox;
-  }
-}
-
-filaUsuario *buscarPrimenroDaFilaDeUsuarios (filaUsuario *pessoa) {
-	printf("Primeiro %s", pessoa->prox->nome);
-  return pessoa->prox;
-}
-
-char* removeUsuarioDaFila (filaUsuario *pessoa) {
- char *nome;
- filaUsuario *p, *t;
-
- t = pessoa; 
- p = pessoa->prox; // p aponta primeiro da fila
- nome = p->nome;
- pessoa->prox = p->prox;
- 
- pessoa = p;
- pessoa->prox = t;
-
- free (p);
- return nome;
-}
-
 
 //###################### Início da Lista de Livros da Biblioteca
 
@@ -155,11 +104,18 @@ struct livro {
 	int id;
 	char* titulo; 
 	char* status;
+	struct filaDeEmprestimo *fila;
  	struct livro *prox;
 };
 
 typedef livro livro;
 
+struct filaDeEmprestimo {
+	char nomeUsuario[50];
+ 	struct filaDeEmprestimo *prox;
+};
+
+typedef filaDeEmprestimo filaDeEmprestimo;
 
 // aloca uma memória do livro
 livro * alocar() {
@@ -168,11 +124,16 @@ livro * alocar() {
 }
 
 //insere livros
-livro* insere (int id, char* titulo, char* status,  livro *lista) {
+livro* inicializarCadastroDeLivro (int id, char* titulo, char* status,  livro *lista) {
+	
+	filaDeEmprestimo *filaEmprestimo = (filaDeEmprestimo*) malloc(sizeof(filaDeEmprestimo));
+	filaEmprestimo->prox = filaEmprestimo;
+	
 	livro *novo =(livro*)malloc(sizeof(livro));
    novo->titulo = titulo;
    novo->status = status;
    novo->id = id;
+   novo->fila = filaEmprestimo;
 	
 	if(lista == NULL)
 	{
@@ -204,11 +165,11 @@ void imprimirLivros(livro* lista) {
 
 //Carregar os livros da biblioteca
 livro* carregarBiblioteca(livro* lista) { 
-	lista = insere(1,"Star Wars", "Disponível", lista);
-	lista = insere(2,"Harry", "Disponível", lista);
-	lista = insere(3,"50 tons de cinza", "Disponível", lista);
-	lista = insere(4,"A elite", "Disponível", lista);
-	lista = insere(5,"Para todos os garotos que amei", "Disponível", lista);
+	lista = inicializarCadastroDeLivro(1,"Star Wars", "Disponível", lista);
+	lista = inicializarCadastroDeLivro(2,"Harry", "Disponível", lista);
+	lista = inicializarCadastroDeLivro(3,"50 tons de cinza", "Disponível", lista);
+	lista = inicializarCadastroDeLivro(4,"A elite", "Disponível", lista);
+	lista = inicializarCadastroDeLivro(5,"Para todos os garotos que amei", "Disponível", lista);
 }
 
 
@@ -227,23 +188,50 @@ livro* buscaLivroId(livro *lista, int id){
       
    return numero;
 }
-//###################### Início da Lista de Livros da Biblioteca
-criaPilhaLivros(pilhaDeLivros *pilha) {
+
+filaDeEmprestimo *inserirNaFilaDeEmprestimo (char nomeUsuario[], filaDeEmprestimo* fila){
+	filaDeEmprestimo *nova;
+	nova = (filaDeEmprestimo*)malloc(sizeof(filaDeEmprestimo));
+	nova->prox = fila->prox;
+	fila->prox = nova;
+	strcpy(nova->nomeUsuario, nomeUsuario);
 	
+	return nova;
 }
+
+void  mostrarFilaDeEmprestimo (filaDeEmprestimo *fila) {
+   filaDeEmprestimo *p;
+   int cont=0;
+   p = fila;
+   while(p->prox != fila){
+	 printf("    Usuário : %s\n", p->prox->nomeUsuario);
+	 cont++;
+	 p = p->prox;
+  }
+}
+
+void tirarDaFilaDeEspera ( filaDeEmprestimo *fila) {
+ filaDeEmprestimo *ponteiro;
+ ponteiro = fila->prox;
+ fila->prox = ponteiro->prox;
+ free (ponteiro);
+}
+
+
+
 
 
 //###################### Início das funções para empréstimo de livros
 void emprestarLivro (livro *livroParaEmprestar, pilhaDeLivros *tp) { 	
-   livroParaEmprestar->status = "Indisponível";
 
-   pilhaDeLivros *novaPilha = (pilhaDeLivros*)malloc(sizeof(pilhaDeLivros));
-   novaPilha->id = livroParaEmprestar->id;
-   novaPilha->titulo = livroParaEmprestar->titulo;
+	pilhaDeLivros *novaPilha = (pilhaDeLivros*)malloc(sizeof(pilhaDeLivros));
+	novaPilha->id = livroParaEmprestar->id;
+	novaPilha->titulo = livroParaEmprestar->titulo;
+	novaPilha->prox  = tp->prox;
+	tp->prox = novaPilha;   	 	
+	livroParaEmprestar->status = "Indisponível";
 
-   novaPilha->prox  = tp->prox;
-   tp->prox = novaPilha;
-}
+ }
 
 void imprimirLivrosEmprestados(pilhaDeLivros *pilha) {
  pilhaDeLivros *aux2= pilha; 
@@ -253,6 +241,18 @@ void imprimirLivrosEmprestados(pilhaDeLivros *pilha) {
 	aux2=aux2->prox;
  }
 }
+
+int devolverLivro (pilhaDeLivros *pilha) {
+   int idLivro;
+   pilhaDeLivros *ponteiro;
+   ponteiro = pilha->prox;
+   idLivro = ponteiro->id;
+   pilha->prox = ponteiro->prox;
+   free (ponteiro);
+   return idLivro; 
+}
+
+
 
 
 int main ()
@@ -267,16 +267,8 @@ int main ()
 	listaUsuarioCadastro = carregarCadUsuario(listaUsuarioCadastro);
 
 
-	filaUsuario *filaUsuarios;
-	filaUsuarios = (filaUsuario*)malloc(sizeof(filaUsuario));
-	filaUsuarios->prox = filaUsuarios;
-	
-	pilhaDeLivros cabeca;
-	pilhaDeLivros *tp;
-	tp = &cabeca;
-	tp->prox = NULL;
-	
-	
+	livro *livroEscolhido;
+	char usuarioEscolhido[50];
 	int escolha, id;
 	char nomeCadastro[30];
 	char *usuarioRemovido;
@@ -289,9 +281,7 @@ int main ()
 	{
 		system("cls");
 		
-//		printf("Fila de usuários para Solicitar Livros\n");
-//		mostrarFilaDeUsuarios(filaUsuarios);
-//		printf("\n\n");
+
 		
 		
 		printf(" -------------> M E N U P R I N C I P A L <---------------\n");
@@ -299,7 +289,8 @@ int main ()
 		printf("|(1)Escolher livro para empréstimo\n");
 		printf("|(2)Mostrar pilha de livos emprestados\n");
 		printf("|(3)Mostrar fila de espera \n");
-		printf("|(4)Sair\n");
+		printf("|(4)Devolver livro\n");
+		printf("|(5)Sair\n");
 		printf("|Escolha a opção desejada:\n");
 		printf("|_________________________________________________________\n");
 		printf("Digite a opção: ");
@@ -309,17 +300,9 @@ int main ()
 		{
 				
 				case 1:
-//					imprimirCadastroUsuarios(listaUsuarioCadastro);
-//					
-//					char novoUsuario[50];
-//					printf("\nInforme Usuário? ");
-//					scanf("%s", novoUsuario);
-//						
-//					filaUsuarios = inserirUsuario(novoUsuario, filaUsuarios);
 
 					imprimirCadastroUsuarios(listaUsuarioCadastro);
 				
-						char usuarioEscolhido[50];
 						printf("\nInforme Usuário? ");
 						scanf("%s", usuarioEscolhido);
 						
@@ -331,20 +314,21 @@ int main ()
 							scanf("%d", &idEscolhido);
 							
 							if (idEscolhido > 0) {
-								livro *livroEscolhido;
+						
 								livroEscolhido  = buscaLivroId(lista, idEscolhido);
 								
-//								char primeiroFila[50]; 
-//								strcpy(primeiroFila, filaUsuarios->prox->nome);
 							
 								usuarioEncontrado = buscarUsuarioPorNome(usuarioEscolhido, listaUsuarioCadastro);												
-								emprestarLivro(livroEscolhido, usuarioEncontrado->pilha);
+								   if (livroEscolhido->status == "Disponível"){
+									 		emprestarLivro(livroEscolhido, usuarioEncontrado->pilha);
+									 }else {
+									 		inserirNaFilaDeEmprestimo(usuarioEncontrado->nome,livroEscolhido->fila);
+									  }
+					
 							}
 						
 						} while (idEscolhido > 0);
 						 
-
-//						removeUsuarioDaFila(filaUsuarios);	
 					
 					break;
 					
@@ -353,15 +337,43 @@ int main ()
 						char usuario[50];
 						
 						printf("\nInforme Usuário que? ");
-						scanf("%s", usuario);
+						scanf("%s",&usuario);
 						
 		
 						usuarioEncontrado = buscarUsuarioPorNome(usuario, listaUsuarioCadastro);
 						imprimirLivrosEmprestados(usuarioEncontrado->pilha);						
 					break;
 			case 3: 
-
+				imprimirLivros(lista);
+				printf("\nInforme o id do livro? ");
+				scanf("%d", &idEscolhido);	
+				livroEscolhido  = buscaLivroId(lista, idEscolhido);
 				
+				printf("*** Depois livro escolhido \n");
+				mostrarFilaDeEmprestimo(livroEscolhido->fila);
+				break;
+			case 4:
+				int livroDevolvido;
+				imprimirCadastroUsuarios(listaUsuarioCadastro);
+				printf("\nInforme Usuário? ");
+						scanf("%s", usuarioEscolhido);
+						usuarioEncontrado = buscarUsuarioPorNome(usuarioEscolhido, listaUsuarioCadastro);
+						livroDevolvido= devolverLivro(usuarioEncontrado->pilha);
+						livroEscolhido  = buscaLivroId(lista, livroDevolvido);
+						
+						printf("Livro devolvido\n");
+						printf("Id: %d  -  Título: %s\n",livroEscolhido->id, livroEscolhido->titulo);
+														
+						if(livroEscolhido->fila == livroEscolhido->fila->prox) {
+							printf("passei if");
+							livroEscolhido->status = "Disponível";
+						} else {
+							printf("passei else \n");
+							
+							usuarioEncontrado = buscarUsuarioPorNome(livroEscolhido->fila->prox->nomeUsuario, listaUsuarioCadastro);
+							emprestarLivro(livroEscolhido, usuarioEncontrado->pilha);
+							tirarDaFilaDeEspera(livroEscolhido->fila);
+						}
 				break;
 				
 		}

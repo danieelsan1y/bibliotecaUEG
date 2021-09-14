@@ -12,12 +12,7 @@ struct usuario {
  	struct usuario *prox;
 };
 
-// Pilha do usuário
-struct pilhaDeLivros {
-	int idLivro;
-	char* tituloLivro; 
- 	struct pilhaUsuario *prox;
-};
+
 
 
 typedef pilhaDeLivros pilhaDeLivros;
@@ -40,20 +35,14 @@ void carregarUsuario (usuario* pessoa) {
  	pessoa = inserirUsuario("Daniel", pessoa);
 	pessoa = inserirUsuario("Danillo", pessoa);
 	pessoa = inserirUsuario("Gabriel", pessoa);
-	pessoa = inserirUsuario("Fernando", pessoa);
 }
 								
 void  mostrarUsuario (usuario *pessoa) {
    usuario *p;
-   int cont=0;
+   int cont=1;
    p = pessoa;
    while(p->prox != pessoa){
-   	if(cont==1)
-   	{
-   		printf("--->Nome: %s\n", p->nome);
-		}else{
-			printf("    Nome: %s\n", p->nome);
-		}
+  	printf("(%d) Nome: %s\n",cont, p->nome);
 		cont++;
 		p = p->prox; 
 	 }    
@@ -157,7 +146,7 @@ livro* buscaLivroId(livro *lista, int id){
 
 
 
-void emprestarLivro (livro *livroParaEmprestar, livro *tp) { 
+void usuario1 (livro *livroParaEmprestar, livro *tp) { 
 	
 	livroParaEmprestar->status = "Indisponível";
    livro *novaPilha = alocar();
@@ -171,13 +160,78 @@ void emprestarLivro (livro *livroParaEmprestar, livro *tp) {
 
 }
 
-void imprimirLivrosEmprestados(livro *pilha) {
-	livro *aux2= pilha;
-	while(aux2->prox!= NULL)
+
+void usuario2 (livro *livroParaEmprestar, livro *tp) { 
+	
+	livroParaEmprestar->status = "Indisponível";
+   livro *novaPilha = alocar();
+   novaPilha->id = livroParaEmprestar->id;
+   novaPilha->titulo = livroParaEmprestar->titulo;
+   novaPilha->status = livroParaEmprestar->status;
+ 
+   
+   novaPilha->prox  = tp->prox;
+   tp->prox = novaPilha;
+
+}
+
+void usuario3 (livro *livroParaEmprestar, livro *tp) { 
+	
+	livroParaEmprestar->status = "Indisponível";
+   livro *novaPilha = alocar();
+   novaPilha->id = livroParaEmprestar->id;
+   novaPilha->titulo = livroParaEmprestar->titulo;
+   novaPilha->status = livroParaEmprestar->status;
+ 
+   
+   novaPilha->prox  = tp->prox;
+   tp->prox = novaPilha;
+
+}
+
+void imprimirLivrosEmprestados(int usuarioPilha,livro *tp, livro *tp2, livro *tp3 ) {
+	livro *aux= tp;
+	livro *aux2= tp2;
+	livro *aux3= tp3;
+	if(usuarioPilha ==1)
 	{
-		printf(" %d   %s \n", aux2->prox->id, aux2->prox->titulo);
-		aux2=aux2->prox;
-	}
+		if(aux->prox==NULL)
+		{
+			printf("\nPilha de emprestimo vazia\n");	
+		}
+		while(aux->prox!= NULL)
+		{
+			printf(" %d   %s \n", aux->prox->id, aux->prox->titulo);
+			aux=aux->prox;
+		}	
+	}	
+	if(usuarioPilha ==2)
+	{
+		if(aux2->prox==NULL)
+		{
+			printf("\nPilha de emprestimo vazia\n");	
+		}		
+		while(aux2->prox!= NULL)
+		{
+			printf(" %d   %s \n", aux2->prox->id, aux2->prox->titulo);
+			aux2=aux2->prox;
+		}	
+	}	
+	if(usuarioPilha ==3)
+	{
+		if(aux->prox==NULL)
+		{
+			printf("\nPilha de emprestimo vazia\n");	
+		}
+		while(aux3->prox!= NULL)
+		{
+			printf(" %d   %s \n", aux3->prox->id, aux3->prox->titulo);
+			aux3=aux3->prox;
+		}	
+		if(usuarioPilha>3)
+		{
+		}
+	}			
 }
 
 
@@ -196,19 +250,28 @@ int main ()
 	pessoa->prox = pessoa;
 
 		
-	/*livro cabeca;
+	livro cabeca;
 	livro *tp;
+	tp = &cabeca;
+	tp->prox = NULL;
+
+	livro cabeca2;
+	livro *tp2;
+	tp2 = &cabeca2;
+	tp2->prox = NULL;
+
+	livro cabeca3;
+	livro *tp3;
+	tp3 = &cabeca3;
+	tp3->prox = NULL;
+	
+	/*pilhaDeLivros cabeca;
+	pilhaDeLivros *tp;
 	tp = &cabeca;
 	tp->prox = NULL;
 	*/
 	
-	pilhaDeLivros cabeca;
-	pilhaDeLivros *tp;
-	tp = &cabeca;
-	tp->prox = NULL;
-	
-	
-	int escolha, id;
+	int escolha, id, usuarioDesejado, usuarioPilha;
 	char nomeCadastro[30];
 	char *usuarioRemovido;
 	int cpf;
@@ -222,7 +285,7 @@ int main ()
 	do
 	{
 		system("cls");
-		printf("Fila de usuários\n");
+	/*	printf("Fila de usuários\n");
 		if (pessoa->prox == pessoa) {
 			pessoa = (usuario*)malloc(sizeof(usuario));
 			pessoa->prox = pessoa;
@@ -231,13 +294,14 @@ int main ()
 		} else {
 			mostrarUsuario(pessoa);
 		}
-		
+		*/
 		
 		printf(" -------------> M E N U P R I N C I P A L <---------------\n");
 		printf("|\n");
-		printf("|(1)Mostrar pessoas cadastradas\n");
+		printf("|(1)Mostrar usuários cadastradas\n");
 		printf("|(2)Mostrar livros\n");
-		printf("|(3)Sair\n");
+		printf("|(3)Solicitar emprestimo\n");
+		printf("|(4)Mostrar Livros emprestado do usuário\n");
 		printf("|Escolha a opção desejada:\n");
 		printf("|_________________________________________________________\n");
 		printf("Digite a opção: ");
@@ -247,7 +311,9 @@ int main ()
 		{
 				
 				case 1:
-					usuarioRemovido = removeUsuario(pessoa);
+					//usuarioRemovido = removeUsuario(pessoa);
+					printf("Usuários Cadastrados\n");
+					mostrarUsuario(pessoa);
 					break;
 					
 					case 2:
@@ -255,16 +321,36 @@ int main ()
 						imprimirLivros(lista);
 				break;
 			case 3: 
-				/*printf("             Livros\n");
+				mostrarUsuario(pessoa);
+				printf("Digite o número do usuário: ");
+				fflush(stdin);
+				scanf("%d",&usuarioDesejado);
+							
+				printf("             Livros\n");
+				
 				imprimirLivros(lista);
 				printf("Digite o número do ID do livro desejado: ");
 				scanf("%d",&id);
 				livroEscolhido = buscaLivroId(lista, id);
-				emprestarLivro(livroEscolhido,  tp);
+				if(usuarioDesejado ==1){
+					usuario1(livroEscolhido,tp);
+				}
+				if(usuarioDesejado ==2)	{
+					usuario2(livroEscolhido,tp2);
+					
+				}
+				if(usuarioDesejado ==3)	{
+					usuario3(livroEscolhido,tp3);
+					
+				}
+				
 				break;
 			case 4:
-				imprimirLivrosEmprestados(tp);
-				*/
+				mostrarUsuario(pessoa);
+				printf("Usuário para mostrar a pilha de emprestimo: ");
+				fflush(stdin);
+				scanf("%d",&usuarioPilha);
+				imprimirLivrosEmprestados(usuarioPilha,tp, tp2, tp3);
 				break;
 				
 		}
