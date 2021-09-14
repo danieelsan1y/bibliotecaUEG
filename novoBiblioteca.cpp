@@ -3,11 +3,24 @@
 #include<string.h>
 #include<locale.h>
 
+
+/*
+	Alunos: Daniel Santana D'Afonseca
+					Gabriel de Oliveira Gondin
+					Lucas Mateus da Costa Bezerra
+
+
+*/
+
+
+
+
 // ################# Cadastro de Usuário da Biblioteca
 // Pilha do usuário
 struct pilhaDeLivros {
 	int id;
 	char* titulo; 
+	int dias;
  	struct pilhaDeLivros *prox;
  	struct pilhaDeLivros *tp;
 };
@@ -222,10 +235,11 @@ void tirarDaFilaDeEspera ( filaDeEmprestimo *fila) {
 
 
 //###################### Início das funções para empréstimo de livros
-void emprestarLivro (livro *livroParaEmprestar, pilhaDeLivros *tp) { 	
+void emprestarLivro (int dias, livro *livroParaEmprestar, pilhaDeLivros *tp) { 	
 
 	pilhaDeLivros *novaPilha = (pilhaDeLivros*)malloc(sizeof(pilhaDeLivros));
 	novaPilha->id = livroParaEmprestar->id;
+	novaPilha->dias = dias;
 	novaPilha->titulo = livroParaEmprestar->titulo;
 	novaPilha->prox  = tp->prox;
 	tp->prox = novaPilha;   	 	
@@ -268,6 +282,7 @@ int main ()
 
 
 	livro *livroEscolhido;
+	int dias;
 	char usuarioEscolhido[50];
 	int escolha, id;
 	char nomeCadastro[30];
@@ -305,6 +320,8 @@ int main ()
 				
 						printf("\nInforme Usuário? ");
 						scanf("%s", usuarioEscolhido);
+						printf("\nInforme a quantidade de dias de emprestimo ");
+						scanf("%d",&dias);
 						
 						imprimirLivros(lista);
 						int idEscolhido;
@@ -320,7 +337,7 @@ int main ()
 							
 								usuarioEncontrado = buscarUsuarioPorNome(usuarioEscolhido, listaUsuarioCadastro);												
 								   if (livroEscolhido->status == "Disponível"){
-									 		emprestarLivro(livroEscolhido, usuarioEncontrado->pilha);
+									 		emprestarLivro(dias,livroEscolhido, usuarioEncontrado->pilha);
 									 }else {
 									 		inserirNaFilaDeEmprestimo(usuarioEncontrado->nome,livroEscolhido->fila);
 									  }
@@ -348,8 +365,6 @@ int main ()
 				printf("\nInforme o id do livro? ");
 				scanf("%d", &idEscolhido);	
 				livroEscolhido  = buscaLivroId(lista, idEscolhido);
-				
-				printf("*** Depois livro escolhido \n");
 				mostrarFilaDeEmprestimo(livroEscolhido->fila);
 				break;
 			case 4:
@@ -365,13 +380,12 @@ int main ()
 						printf("Id: %d  -  Título: %s\n",livroEscolhido->id, livroEscolhido->titulo);
 														
 						if(livroEscolhido->fila == livroEscolhido->fila->prox) {
-							printf("passei if");
 							livroEscolhido->status = "Disponível";
 						} else {
 							printf("passei else \n");
 							
 							usuarioEncontrado = buscarUsuarioPorNome(livroEscolhido->fila->prox->nomeUsuario, listaUsuarioCadastro);
-							emprestarLivro(livroEscolhido, usuarioEncontrado->pilha);
+							emprestarLivro(dias, livroEscolhido, usuarioEncontrado->pilha);
 							tirarDaFilaDeEspera(livroEscolhido->fila);
 						}
 				break;

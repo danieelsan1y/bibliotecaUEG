@@ -5,3 +5,8 @@ O trabalho deverá ser feito com lista, fila e pilhas encadeadas.
 Poderão ser feito em grupo de até 3 alunos.
 
 O valor será calculado conforme a quantidade de atividade no bimestre.
+
+
+Alunos: Daniel Santana	
+	Gabriel Gondin
+	Lucas Mateus
